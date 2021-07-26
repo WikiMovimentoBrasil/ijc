@@ -22,6 +22,22 @@
             <div class="w3-row" style="margin-bottom: 15px">
                 <div class="w3-quarter">&nbsp;</div>
                 <div class="w3-half">
+                    <div class="w3-container" style="background-color:#FFC8C8; padding:15px; margin-right:15px;
+                    margin-left:15px; border-radius: 5px; margin-bottom: 15px">
+                        <p style="color:red">
+                            <b>
+                                Atenção!
+                            </b>
+                        </p>
+                        <p style="font-size: 85%">
+                            As informações fornecidas por você são armazenadas na base de dados desta ferramenta.
+                            Somente a coordenação do curso tem acesso.
+                        </p>
+                        <p style="font-size: 85%">
+                            O seu nome completo e sem abreviações é obrigatório para a emissão da carta de inscrição
+                            e do certificado de conclusão. Verifique com atenção antes de salvá-lo.
+                        </p>
+                    </div>
                     <form action="{{ url_for('subscription') }}" method="post" id="name_form">
                         <input type="hidden" name="Username" maxlength="150" value="{{ username }}">
                         <div class="w3-container" style="margin-bottom: 15px">
@@ -51,14 +67,7 @@
                             </button>
                         </div>
                     {% else %}
-                        <div class="w3-container" style="margin-bottom: 15px">
-                            <a href="{{ url_for('update_subscription') }}" title="Atualizar nome">
-                                <button class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
-                                    Atualizar nome completo
-                                </button>
-                            </a>
-                        </div>
-                        <div class="w3-container" style="margin-bottom: 15px">
+                        <div class="w3-container">
                             <a href="{{ url_for('subscription_letter') }}" title="Download">
                                 <button class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
                                     Baixar carta de inscrição
@@ -66,25 +75,6 @@
                             </a>
                         </div>
                     {% endif %}
-                </div>
-                <div class="w3-quarter">
-                    <div class="w3-container" style="background-color:#FFC8C8; padding:15px; margin-right:15px;
-                    margin-left:15px; border-radius: 5px">
-                        <p style="color:red">
-                            <b>
-                                Atenção!
-                            </b>
-                        </p>
-                        <p style="font-size: 85%">
-                            As informações fornecidas por você são armazenadas na base de dados desta ferramenta.
-                            Somente a coordenação do curso tem acesso.
-                        </p>
-                        <p style="font-size: 85%">
-                            O seu nome completo é obrigatório para a emissão da carta de inscrição e do certificado
-                            de conclusão. A alteração do nome invalida todos os certificados, que precisarão ser
-                            baixados novamente. Só o altere se por acaso cometeu algum erro de digitação.
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

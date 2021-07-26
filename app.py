@@ -185,51 +185,59 @@ def subscription():
     """
 
     username = get_username()
-    if request.method == 'POST':
-        user_name = request.form['Username']
-        full_name = request.form['FullName']
 
-        new_subscription = Users(username=user_name, full_name=full_name)
+    if username:
+        if request.method == 'POST':
+            user_name = request.form['Username']
+            full_name = request.form['FullName']
 
-        # Try to push it to the database
-        try:
-            db.session.add(new_subscription)
-            db.session.commit()
-            return redirect(url_for('subscription'))
-        except:
-            return 'Ocorreu um erro!'
+            new_subscription = Users(username=user_name, full_name=full_name)
+
+            # Try to push it to the database
+            try:
+                db.session.add(new_subscription)
+                db.session.commit()
+                return redirect(url_for('subscription'))
+            except:
+                return 'Ocorreu um erro!'
+        else:
+            user_is_registered = Users.query.filter_by(username=username).first()
+            return render_template('subscription.html',
+                                   username=username,
+                                   user_is_registered=user_is_registered)
     else:
-        user_is_registered = Users.query.filter_by(username=username).first()
-        return render_template('subscription.html',
-                               username=username,
-                               user_is_registered=user_is_registered)
+        return redirect(url_for('home'))
 
 
-@app.route('/update_subscription', methods=['POST', 'GET'])
-def update_subscription():
+@app.route('/update_subscription/<user_username>', methods=['POST', 'GET'])
+def update_subscription(user_username):
     """
-    This function shows a page for the users update their full name
+    This function shows a page for the coordinator update users full name
 
-    :return: A html page with a form for subscription
+    :return: A html page with a form for updating the user subscription
     """
 
     username = get_username()
-    user_to_update = Users.query.filter_by(username=username).first()
+    if username in app.config['COORDINATORS_USERNAMES']:
+        user_to_update = Users.query.filter_by(username=user_username).first()
 
-    if request.method == 'POST':
-        user_to_update.full_name = request.form["FullName"]
-        user_to_update.date_modified = datetime.utcnow()
+        if request.method == 'POST':
+            user_to_update.full_name = request.form["FullName"]
+            user_to_update.date_modified = datetime.utcnow()
+            user_to_update.can_download_certificate = False
 
-        # Try to push it to the database
-        try:
-            db.session.commit()
-            return redirect(url_for('subscription'))
-        except:
-            return 'Ocorreu um erro!'
+            # Try to push it to the database
+            try:
+                db.session.commit()
+                return redirect(url_for('subscription'))
+            except:
+                return 'Ocorreu um erro!'
+        else:
+            return render_template('update_subscription.html',
+                                   username=username,
+                                   user=user_to_update)
     else:
-        return render_template('update_subscription.html',
-                               username=username,
-                               user=user_to_update)
+        return redirect(url_for('home'))
 
 
 @app.route('/subscription_letter', methods=['GET'])
