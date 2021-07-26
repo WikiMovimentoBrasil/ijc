@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% with lang=lang, username=username %}
+        {% include 'topnavbar.html' %}
+    {% endwith %}
+{% endblock %}
+
+{% block title %}Página inicial{% endblock %}
+{% block content %}
+    <div class="w3-container" style="text-align: center; padding:0">
+        <div class="w3-container"
+             style="height:200px; overflow:hidden; padding:0; position: relative; margin-bottom: 30px">
+            <img width="100%" src="{{ url_for('static', filename='A_los_derechos_humanos.jpg') }}">
+            <div class="w3-quarter"></div>
+            <div class="w3-half" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                             font-size:150%; color:white; font-family:'Linux Libertine';
+                             background: rgba(0, 104, 163, 0.9); padding: 10px; border-radius: 5px">
+                <b>INTRODUÇÃO AO JORNALISMO CIENTÍFICO</b>
+            </div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-quarter">&nbsp;</div>
+            <div class="w3-half">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <a class="button" href="{{ url_for('course_index') }}">
+                        <button type="button" style="width:100%;">
+                            Programa do curso
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-quarter">&nbsp;</div>
+            <div class="w3-half">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <a class="button" href="{{ url_for('subscription') }}">
+                        <button type="button" style="width:100%;">
+                            Inscrição
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-quarter">&nbsp;</div>
+            <div class="w3-half">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <a class="button" href="{{ url_for('certificate') }}">
+                        <button type="button" style="width:100%;">
+                            Certificado
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="w3-row">
+            <div class="w3-quarter">&nbsp;</div>
+            <div class="w3-half">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <a class="button" href="{{ url_for('validate_document') }}">
+                        <button type="button" style="width:100%;">
+                            Validação de documentos
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

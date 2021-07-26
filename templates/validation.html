@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% with lang=lang, username=username %}
+        {% include 'topnavbar.html' %}
+    {% endwith %}
+{% endblock %}
+
+{% block title %}Validação{% endblock %}
+{% block content %}
+    <div class="w3-container" style="text-align: center; padding:0">
+        <div class="w3-container" style="height:200px; overflow:hidden; padding:0; position: relative; margin-bottom: 30px">
+            <img width="100%" src="{{ url_for('static', filename='A_los_derechos_humanos.jpg') }}">
+            <div class="w3-quarter"></div>
+            <div class="w3-half" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                        font-size:150%; color:white; font-family:'Linux Libertine';
+                        background: rgba(0, 104, 163, 0.9); padding: 10px; border-radius: 5px">
+                <b>INTRODUÇÃO AO JORNALISMO CIENTÍFICO</b>
+            </div>
+        </div>
+        <div class="w3-container" style="text-align: center; padding:0">
+            <div class="w3-row" style="margin-bottom: 15px">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <form action="{{ url_for('validate_document') }}" method="post" id="validation_form">
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            <div style="font-size: 125%; margin-bottom: 15px">Digite o código de validação do documento:</div>
+                            <input type="text" name="hash" maxlength="40" minlength="40"
+                               style="width: 100%; height: 45px; font-size: 125%; padding: 5px">
+                        </div>
+                    </form>
+                    <div class="w3-container" style="margin-bottom: 15px">
+                        <button type="submit" form="validation_form" class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
+                            Verificar
+                        </button>
+                    </div>
+                    {% if success %}
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            {% if message %}
+                                <p style="font-size: 150%; margin-top: 15px; color:#009000">
+                                    Este documento é válido!
+                                </p>
+                            {% else %}
+                                <p style="font-size: 150%; margin-top: 15px; color:#c90000">
+                                    Este documento não é válido ou perdeu a validade!
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

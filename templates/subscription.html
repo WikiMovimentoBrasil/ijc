@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% with lang=lang, username=username %}
+        {% include 'topnavbar.html' %}
+    {% endwith %}
+{% endblock %}
+
+{% block title %}Inscrição{% endblock %}
+{% block content %}
+    <div class="w3-container" style="text-align: center; padding:0">
+        <div class="w3-container" style="height:200px; overflow:hidden; padding:0; position: relative; margin-bottom: 30px">
+            <img width="100%" src="{{ url_for('static', filename='A_los_derechos_humanos.jpg') }}">
+            <div class="w3-quarter"></div>
+            <div class="w3-half" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                        font-size:150%; color:white; font-family:'Linux Libertine';
+                        background: rgba(0, 104, 163, 0.9); padding: 10px; border-radius: 5px">
+                <b>INTRODUÇÃO AO JORNALISMO CIENTÍFICO</b>
+            </div>
+        </div>
+        <div class="w3-container" style="text-align: center; padding:0">
+            <div class="w3-row" style="margin-bottom: 15px">
+                <div class="w3-quarter">&nbsp;</div>
+                <div class="w3-half">
+                    <form action="{{ url_for('subscription') }}" method="post" id="name_form">
+                        <input type="hidden" name="Username" maxlength="150" value="{{ username }}">
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            <input type="text" placeholder="Nome de usuário(a)" name="Username_show"
+                               style="width: 100%; height: 45px; font-size: 125%; padding: 5px"
+                               maxlength="150" value="{{ username }}" disabled>
+                        </div>
+                        {% if not user_is_registered %}
+                            <div class="w3-container" style="margin-bottom: 15px">
+                                <input type="text" placeholder="Nome completo" name="FullName"
+                                       style="width: 100%; height: 45px; font-size: 125%; padding: 5px"
+                                       maxlength="300">
+                            </div>
+                        {% else %}
+                            <div class="w3-container" style="margin-bottom: 15px">
+                                <input type="text" placeholder="Nome completo" name="FullName"
+                                       style="width: 100%; height: 45px; font-size: 125%; padding: 5px"
+                                       value="{{ user_is_registered.full_name }}" disabled
+                                       maxlength="300">
+                            </div>
+                        {% endif %}
+                    </form>
+                    {% if not user_is_registered %}
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            <button type="submit" form="name_form" class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
+                                Inscrever-se
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            <a href="{{ url_for('update_subscription') }}" title="Atualizar nome">
+                                <button class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
+                                    Atualizar nome completo
+                                </button>
+                            </a>
+                        </div>
+                        <div class="w3-container" style="margin-bottom: 15px">
+                            <a href="{{ url_for('subscription_letter') }}" title="Download">
+                                <button class="button" style="width: 100%; margin: 0; padding: 5px; height: 45px">
+                                    Baixar carta de inscrição
+                                </button>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="w3-quarter">
+                    <div class="w3-container" style="background-color:#FFC8C8; padding:15px; margin-right:15px;
+                    margin-left:15px; border-radius: 5px">
+                        <p style="color:red">
+                            <b>
+                                Atenção!
+                            </b>
+                        </p>
+                        <p style="font-size: 85%">
+                            As informações fornecidas por você são armazenadas na base de dados desta ferramenta.
+                            Somente a coordenação do curso tem acesso.
+                        </p>
+                        <p style="font-size: 85%">
+                            O seu nome completo é obrigatório para a emissão da carta de inscrição e do certificado
+                            de conclusão. A alteração do nome invalida todos os certificados, que precisarão ser
+                            baixados novamente. Só o altere se por acaso cometeu algum erro de digitação.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

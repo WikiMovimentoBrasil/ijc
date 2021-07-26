@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% with lang=lang, username=username %}
+        {% include 'topnavbar.html' %}
+    {% endwith %}
+{% endblock %}
+
+{% block title %}Certificado{% endblock %}
+{% block content %}
+    <div class="w3-container" style="text-align: center; padding:0">
+        <div class="w3-container"
+             style="height:200px; overflow:hidden; padding:0; position: relative; margin-bottom: 30px">
+            <img width="100%" src="{{ url_for('static', filename='A_los_derechos_humanos.jpg') }}">
+            <div class="w3-quarter"></div>
+            <div class="w3-half" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                        font-size:150%; color:white; font-family:'Linux Libertine';
+                        background: rgba(0, 104, 163, 0.9); padding: 10px; border-radius: 5px">
+                <b>INTRODUÇÃO AO JORNALISMO CIENTÍFICO</b>
+            </div>
+        </div>
+        <div class="w3-container" style="text-align: center; padding:0">
+            <div class="w3-row" style="margin-bottom: 15px">
+                <div class="w3-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Nome de usuário(a)</th>
+                            <th>Nome completo</th>
+                            <th colspan="6">Atividades</th>
+                            {% if coordinator %}
+                                <th>Pode emitir certificado?</th>
+                            {% else %}
+                                <th>Emitir certificado</th>
+                            {% endif %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.full_name }}</td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/Metodologia_e_Filosofia_da_Ciência/Atividade/{{ user.username }}">
+                                        Módulo 1
+                                    </a>
+                                </td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/História_da_Ciência_e_da_Tecnologia/Atividade/{{ user.username }}">
+                                        Módulo 2
+                                    </a>
+                                </td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/Ética_da_Ciência/Atividade/{{ user.username }}">
+                                        Módulo 3
+                                    </a>
+                                </td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/Temas_Centrais_da_Ciência_Contemporânea/Atividade/{{ user.username }}">
+                                        Módulo 4
+                                    </a>
+                                </td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/Modos_de_Organização_e_Financiamento_dos_Sistemas_de_Pesquisa,_no_Brasil_e_no_Exterior/Atividade/{{ user.username }}">
+                                        Módulo 5
+                                    </a>
+                                </td>
+                                <td style="text-align: center">
+                                    <a target="_blank"
+                                       href="https://pt.wikiversity.org/wiki/Introdução_ao_Jornalismo_Científico/Mídias,_Linguagens_e_Prática_do_Jornalismo_Científico/Atividade/{{ user.username }}">
+                                        Módulo 6
+                                    </a>
+                                </td>
+                                {% if coordinator %}
+                                    <td style="text-align: center">
+                                        <a href="{{ url_for('approve_certification', user=user.username) }}">
+                                            <button type="button" value="Sim"
+                                                    style="padding:10px; background-color: #009000">Sim</button>
+                                        </a>
+                                        <a href="{{ url_for('deny_certification', user=user.username) }}">
+                                            <button type="button" value="Não"
+                                                    style="padding:10px; background-color: #c90000">Não</button>
+                                        </a>
+                                    </td>
+                                {% else %}
+                                    <td style="text-align: center">
+                                        <a {% if user.can_download_certificate %}href="{{ url_for('generate_certificate') }}"{% endif %}>
+                                            <button type="button" style="padding:10px; background-color: {% if user.can_download_certificate %}#009000{% else %}#90c090{% endif %}">
+                                                Certificado
+                                            </button>
+                                        </a>
+                                        <br>
+                                        <a {% if user.can_download_certificate %}href="{{ url_for('generate_attachment') }}"{% endif %}>
+                                            <button type="button" style="padding:10px; background-color:{% if user.can_download_certificate %}#c90000{% else %}#c96c6c{% endif %}">
+                                                Anexos
+                                            </button>
+                                        </a>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

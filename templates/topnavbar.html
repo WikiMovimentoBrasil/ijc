@@ -1,0 +1,10 @@
+<nav class="topnav" id="topnavbar">
+    <a tabindex="0" id="inicio" href="{{url_for('home')}}" class="active" style="color:#0069a1">Página inicial</a>
+    <a tabindex="0" id="sobre" href="/sobre">Sobre</a>
+    {% if username %}
+        <a class="right" tabindex="0" target="_blank" href="https://pt.wikiversity.org/wiki/Special:Contributions/{{username}}">{{username}}</a>
+    {% else %}
+        <a class="right" tabindex="0" href="{{ url_for('login', next=request.script_root + request.full_path) }}">Autenticar-se</a>
+    {% endif %}
+    <a tabindex="0" id="menu" href="javascript:void(0);" class="icon" onclick="menuFunction()" aria-label='Menu'><i class="fa fa-bars"></i></a>
+</nav>
