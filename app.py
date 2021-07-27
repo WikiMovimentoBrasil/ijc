@@ -5,8 +5,10 @@ import os
 import yaml
 import requests
 import hashlib
+import shutil
+import PyPDF2
 import cryptography
-from flask import Flask, render_template, send_file, request, redirect, url_for, session, make_response
+from flask import Flask, render_template, send_file, request, redirect, url_for, session, make_response, Response
 from fpdf import FPDF
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -250,6 +252,7 @@ def update_subscription(user_username):
         return redirect(url_for('home'))
 
 
+# Gerar carta de inscrição
 @app.route('/subscription_letter', methods=['GET'])
 def subscription_letter():
     """
@@ -353,9 +356,10 @@ def subscription_letter():
         response.headers.set('Content-Type', 'application/pdf')
         return response
     else:
-        return redirect('inicio')
+        return redirect(url_for('home'))
 
 
+# Validar documentos
 @app.route('/validate', methods=['POST', 'GET'])
 def validate_document():
     """
@@ -389,6 +393,7 @@ def validate_document():
         return render_template('validation.html', username=username)
 
 
+# Baixar índice
 @app.route('/index', methods=['GET'])
 def course_index():
     base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/"
@@ -401,6 +406,7 @@ def course_index():
     return response
 
 
+# Gerar certificado
 @app.route('/generate_certificate', methods=['GET'])
 def generate_certificate():
     """
@@ -465,8 +471,9 @@ def generate_certificate():
             # por ter completado as leituras e as 6 tarefas do curso online
             #######################################################################################################
             pdf.set_font('Merriweather', '', 14.5)
-            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='por ter completado as leituras e as 6 '
-                                                               'tarefas do curso online')
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='por ter completado as leituras e as ' +
+                                                               str(app.config["NUMBER_OF_MODULES"]) +
+                                                               ' tarefas do curso online')
 
             #######################################################################################################
             # Introdução ao Jornalismo Científico
@@ -543,11 +550,47 @@ def generate_certificate():
         return redirect(url_for('home'))
 
 
+# Gerar anexos
 @app.route('/generate_attachment', methods=['GET'])
 def generate_attachment():
-    pass
+    username = get_username()
+
+    base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/"
+    prefix_course = 'Introdução_ao_Jornalismo_Científico%2F'
+    pages = ["Metodologia_e_Filosofia_da_Ciência%2FAtividade%2F",
+             "História_da_Ciência_e_da_Tecnologia%2FAtividade%2F",
+             "Ética_da_Ciência%2FAtividade%2F",
+             "Temas_Centrais_da_Ciência_Contemporânea%2FAtividade%2F",
+             "Modos_de_Organização_e_Financiamento_dos_Sistemas_de_Pesquisa,_no_Brasil_e_no_Exterior%2FAtividade%2F",
+             "Mídias,_Linguagens_e_Prática_do_Jornalismo_Científico%2FAtividade%2F"]
+
+    user = Users.query.filter_by(username=username).first()
+
+    if user and user.can_download_certificate == ";".join(["T" for i in range(app.config["NUMBER_OF_MODULES"])]):
+        try:
+            responses = []
+            for page in pages:
+                responses.append(PyPDF2.PdfFileReader(io.BytesIO(requests.get(base_url + prefix_course + page + user.username).content)))
+            output = io.BytesIO()
+            writer = PyPDF2.PdfFileWriter()
+            for response in responses:
+                n = response.getNumPages()
+                for i in range(n):
+                    writer.addPage(response.getPage(i))
+
+            writer.write(output)
+            result = Response(output.getvalue(), mimetype="application/pdf")
+            result.headers.set('Content-Disposition', 'attachment',
+                               filename='IJC_Anexos_' + user.full_name.replace(' ', '_') + '.pdf')
+            result.headers.set('Content-Type', 'application/pdf')
+            return result
+        except:
+            return redirect(url_for('certificate'))
+    else:
+        return redirect(url_for('certificate'))
 
 
+# Gerenciar atividades
 @app.route('/certificate', methods=['GET'])
 def certificate():
     username = get_username()
@@ -571,9 +614,26 @@ def certificate():
                                    users=users,
                                    can_download_certificate=can_download_certificate)
     else:
-        return redirect('home.html')
+        return redirect(url_for('home'))
 
 
+# Gerenciar atividades
+@app.route('/certificate/requested', methods=['GET'])
+def certificate_only_requested():
+    username = get_username()
+
+    if username in app.config['COORDINATORS_USERNAMES']:
+        if request.method == 'GET':
+            users = Users.query.filter_by(solicited_certificate=True)
+            return render_template('certificate.html',
+                                   username=username,
+                                   users=users,
+                                   coordinator=True)
+    else:
+        return redirect(url_for('certificate'))
+
+
+# Solicitar certificado
 @app.route('/solicit_certificate', methods=['GET'])
 def solicit_certificate():
     username = get_username()
@@ -591,6 +651,7 @@ def solicit_certificate():
         return redirect(url_for('subscription'))
 
 
+# Rejeitar pedido de certificação (atividades pendentes)
 @app.route('/deny_solicitation/<user_username>', methods=['GET'])
 def deny_solicitation_for_certificate(user_username):
     username = get_username()
@@ -608,6 +669,26 @@ def deny_solicitation_for_certificate(user_username):
         return redirect(url_for('certificate'))
 
 
+# Aprovar certificação sem pedido
+@app.route('/approve_certification_without_request/<user_username>', methods=['GET'])
+def approve_certification_without_request(user_username):
+    username = get_username()
+
+    if username in app.config['COORDINATORS_USERNAMES']:
+        user_approved = Users.query.filter_by(username=user_username).first()
+        if user_username and user_approved:
+            user_approved.solicited_certificate = True
+            user_approved.can_download_certificate = ";".join(["T" for i in range(app.config["NUMBER_OF_MODULES"])])
+            try:
+                db.session.commit()
+                return redirect(url_for('certificate'))
+            except:
+                return 'Ocorreu um erro!'
+    else:
+        return redirect(url_for('certificate'))
+
+
+# Aprovar uma atividade
 @app.route('/approve_certification/<user>/<module_activity>', methods=['GET'])
 def approve_certification(user, module_activity):
     username = get_username()
@@ -627,6 +708,7 @@ def approve_certification(user, module_activity):
         return redirect(url_for('certificate'))
 
 
+# Rejeitar uma atividade
 @app.route('/deny_certification/<user>/<module_activity>', methods=['GET'])
 def deny_certification(user, module_activity):
     username = get_username()
@@ -644,47 +726,6 @@ def deny_certification(user, module_activity):
             return 'Ocorreu um erro!'
     else:
         return redirect(url_for('certificate'))
-
-
-@app.route('/all', methods=['GET'])
-def check_all_pages():
-    username = get_username()
-    base_url = 'https://pt.wikiversity.org/w/api.php?'
-    prefix_course = 'Introdução ao Jornalismo Científico/'
-    pages = ['Introdução_ao_Jornalismo_Científico%2FMetodologia_e_Filosofia_da_Ciência',
-             'Introdução_ao_Jornalismo_Científico%2FHistória_da_Ciência_e_da_Tecnologia',
-             'Introdução_ao_Jornalismo_Científico%2FÉtica_da_Ciência',
-             'Introdução_ao_Jornalismo_Científico%2FTemas_Centrais_da_Ciência_Contemporânea',
-             'Introdução_ao_Jornalismo_Científico%2FModos_de_Organização_e_Financiamento_dos_Sistemas_de_Pesquisa,_no_Brasil_e_no_Exterior',
-             'Introdução_ao_Jornalismo_Científico%2FMídias,_Linguagens_e_Prática_do_Jornalismo_Científico']
-
-    base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/"
-
-    output_file = "result.pdf"
-    # merger = PdfFileMerger()
-    os.mkdir('tmp/' + username)
-    for page in pages:
-        with open('tmp/'+username+"/"+page.replace('Introdução_ao_Jornalismo_Científico%2F', '')+'.pdf', 'wb') as f:
-            f.write(requests.get(base_url + page).content)
-
-    merge.Merge(output_file).merge_folder('tmp/'+username)
-    # for page in pages:
-    #     with open('tmp/'+username+page.replace('Introdução_ao_Jornalismo_Científico%2F', '') + '.pdf', 'rb') as f:
-    #         merger.append(f)
-    #
-    # with open("result.pdf", "wb") as fout:
-    #     merger.write(fout)
-    #
-    return send_file(output_file, attachment_filename='result.pdf', mimetype='application/pdf')
-    # # myio.seek(0)
-    # # return myio
-    # response = make_response(myio)
-    # response.headers.set('Content-Disposition', 'attachment',
-    #                      filename='IJC_Programa__.pdf')
-    # response.headers.set('Content-Type', 'application/pdf')
-    # return response
-    # file_return = merger.write('file.pdf')
-    # return file_return
 
 
 def get_revision_ids(data):
