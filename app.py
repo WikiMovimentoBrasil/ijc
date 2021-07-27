@@ -166,6 +166,19 @@ def oauth_callback():
 ########################################################################################################################
 # P A G E S
 ########################################################################################################################
+# Sobre
+@app.route('/about')
+def about():
+    """
+    This function shows a page describing the Introdução ao Jornalismo Científico course and tool
+
+    :return: A html page with the about content.
+    """
+
+    username = get_username()
+    return render_template('about.html',
+                           username=username)
+
 
 # Página inicial
 @app.route('/')

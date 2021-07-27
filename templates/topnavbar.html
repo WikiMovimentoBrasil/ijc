@@ -1,6 +1,6 @@
 <nav class="topnav" id="topnavbar">
     <a tabindex="0" id="inicio" href="{{url_for('home')}}" class="active" style="color:#0069a1">Página inicial</a>
-    <a tabindex="0" id="sobre" href="/sobre">Sobre</a>
+    <a tabindex="0" id="sobre" href="/about">Sobre</a>
     {% if username %}
         <a class="right" tabindex="0" target="_blank" href="https://pt.wikiversity.org/wiki/Special:Contributions/{{username}}">{{username}}</a>
     {% else %}

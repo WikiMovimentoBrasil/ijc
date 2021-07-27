@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    {% with lang=lang, username=username %}
+        {% include 'topnavbar.html' %}
+    {% endwith %}
+{% endblock %}
+
+{% block title %}Sobre{% endblock %}
+{% block content %}
+<div class="w3-container" style="text-align: center; padding:0">
+    <div class="w3-container"
+         style="height:200px; overflow:hidden; padding:0; position: relative; margin-bottom: 30px">
+        <img width="100%" src="{{ url_for('static', filename='A_los_derechos_humanos.jpg') }}">
+        <div class="w3-quarter"></div>
+        <div class="w3-half" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                             font-size:150%; color:white; font-family:'Linux Libertine';
+                             background: rgba(0, 104, 163, 0.9); padding: 10px; border-radius: 5px">
+            <b>INTRODUÇÃO AO JORNALISMO CIENTÍFICO</b>
+        </div>
+    </div>
+    <div class="w3-row" style="text-align: justify">
+        <div class="w3-quarter">&nbsp;</div>
+        <div class="w3-half">
+            <p>O curso <b>Introdução ao Jornalismo Científico</b> é uma iniciativa da equipe de difusão do <i>Centro de
+                Pesquisa, Inovação e Difusão em Neuromatemática</i> (<a target="_blank" href="https://pt.wikipedia.org/wiki/Centro_de_Pesquisa,_Inovação_e_Difusão_em_Neuromatemática">CEPID NeuroMat</a>),
+                com o apoio da <i>Fundação de Amparo à Pesquisa do Estado de São Paulo</i> (a <a target="_blank" href="https://pt.wikipedia.org/wiki/Funda%C3%A7%C3%A3o_de_Amparo_%C3%A0_Pesquisa_do_Estado_de_S%C3%A3o_Paulo">FAPESP</a>)
+                e do <i>Grupo de Usuários Wiki Movimento Brasil</i> (<a target="_blank" href="https://meta.wikimedia.org/wiki/Wiki_Movement_Brazil_User_Group/pt-br">Wiki Movimento Brasil</a>).
+                O objetivo do curso é oferecer uma formação básica para profissionais e estudantes de comunicação,
+                além dos demais interessados no campo do jornalismo científico.
+            </p>
+            <p>
+                O conteúdo do curso abarca a formação obrigatória do edital do "<i>Programa José Reis de Incentivo ao
+                Jornalismo Científico</i>" (chamado ainda de "<i>Mídia Ciência</i>"), da própria FAPESP, cujo edital
+                pode ser acessado <a target="_blank" href="https://fapesp.br/jornalismocientifico">aqui</a> Note,
+                contudo, que para o reconhecimento da realização deste curso pelos professores responsáveis, são
+                obrigatórias a inscrição e a realização das atividades propostas.
+            </p>
+            <p>
+                Para a realização do curso, foi desenvolvido um conjunto de módulos ditos de "<i>Curso Online Aberto e
+                Massivo</i>" (mais conhecidos pela sigla "<a target="_blank" href="https://pt.wikipedia.org/wiki/MOOC">MOOC</a>")
+                nesta plataforma livre que é a Wikiversidade. Tal escolha garante a colaboração ativa de pessoas
+                interessadas no conteúdo. Assim, para que se tenha proveito pleno do curso, é importante estar
+                autenticado na Wikiversidade, o que permitirá que suas tarefas e dúvidas sejam devidamente registradas
+                sob um mesmo usuário. Mais instruções sobre o curso estão presentes nas <a target="_blank" href="https://pt.wikiversity.org/wiki/Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico">páginas da Wikiversidade</a>.
+            </p>
+            <p>
+                Este aplicativo foi desenvolvido para facilitar o processo de geração e validação dos documentos que o
+                curso gera: <a target="_blank" href="{{ url_for('subscription') }}"><i>Carta de inscrição</i></a>,
+                <a target="_blank" href="https://pt.wikiversity.org/wiki/Programa_de_Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico"><i>Programa de Introdução ao Jornalismo Científico</i></a>,
+                os <a target="_blank" href="{{ url_for('certificate') }}"><i>anexos das atividade</i></a> e o <a target="_blank" href="{{ url_for('certificate') }}"><i>certificado de conclusão</i></a>.
+            </p>
+            <hr>
+            <p>
+                <small>
+                    Este aplicativo foi desenvolvido em <a target='_blank' href='https://pt.wikipedia.org/wiki/Flask_(framework_web)'><i>Flask</i></a><br>
+                    O código-fonte está disponível no <a target='_blank' href='https://github.com/WikiMovimentoBrasil/ijc'>GitHub</a><br>
+                    Licença do cógido-fonte: <a target='_blank' href='https://github.com/WikiMovimentoBrasil/ijc/blob/master/LICENSE'>GPL v3.0</a><br>
+                    Licença de textos: <a target='_blank' href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA 3.0 Internacional</a><br>
+                    Versão 1.0.
+                </small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
