@@ -36,7 +36,8 @@ class Users(db.Model):
     full_name = db.Column(StringEncryptedType(db.String(300), key), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow())
     date_modified = db.Column(db.DateTime, default=datetime.utcnow())
-    can_download_certificate = db.Column(db.Boolean, nullable=False, default=False)
+    can_download_certificate = db.Column(db.String(), nullable=False)
+    solicited_certificate = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class SubsPDF(FPDF):
@@ -163,6 +164,8 @@ def oauth_callback():
 ########################################################################################################################
 # P A G E S
 ########################################################################################################################
+
+# Página inicial
 @app.route('/')
 def home():
     """
@@ -176,6 +179,7 @@ def home():
                            username=username)
 
 
+# Inscrição
 @app.route('/subscription', methods=['POST', 'GET'])
 def subscription():
     """
@@ -190,8 +194,11 @@ def subscription():
         if request.method == 'POST':
             user_name = request.form['Username']
             full_name = request.form['FullName']
+            modules_activities = ["F" for i in range(app.config["NUMBER_OF_MODULES"])]
 
-            new_subscription = Users(username=user_name, full_name=full_name)
+            new_subscription = Users(username=user_name,
+                                     full_name=full_name,
+                                     can_download_certificate=";".join(modules_activities))
 
             # Try to push it to the database
             try:
@@ -209,6 +216,7 @@ def subscription():
         return redirect(url_for('home'))
 
 
+# Atualizar inscrição
 @app.route('/update_subscription/<user_username>', methods=['POST', 'GET'])
 def update_subscription(user_username):
     """
@@ -224,7 +232,9 @@ def update_subscription(user_username):
         if request.method == 'POST':
             user_to_update.full_name = request.form["FullName"]
             user_to_update.date_modified = datetime.utcnow()
-            user_to_update.can_download_certificate = False
+
+            modules_activities = ["F" for i in range(app.config["NUMBER_OF_MODULES"])]
+            user_to_update.can_download_certificate = ";".join(modules_activities)
 
             # Try to push it to the database
             try:
@@ -401,131 +411,134 @@ def generate_certificate():
     username = get_username()
 
     user = Users.query.filter_by(username=username).first()
-    if username and user and user.can_download_certificate:
-        # Create page
-        pdf = CertificationPDF(orientation='L', unit='mm', format='A4')
-        pdf.add_page()
-        pdf.set_text_color(0, 46, 75)
+    if username and user:
+        if user.can_download_certificate == ";".join(["T" for i in range(app.config["NUMBER_OF_MODULES"])]):
+            # Create page
+            pdf = CertificationPDF(orientation='L', unit='mm', format='A4')
+            pdf.add_page()
+            pdf.set_text_color(0, 46, 75)
 
-        #######################################################################################################
-        # Header
-        #######################################################################################################
-        pdf.set_y(20)                          # Start the letter text at the 10x42mm point
+            #######################################################################################################
+            # Header
+            #######################################################################################################
+            pdf.set_y(20)                          # Start the letter text at the 10x42mm point
 
-        pdf.add_font('Merriweather', '', os.path.join(app.static_folder, 'fonts/Merriweather-Regular.ttf'), uni=True)
-        pdf.add_font('Merriweather-Bold', '', os.path.join(app.static_folder, 'fonts/Merriweather-Bold.ttf'), uni=True)
-        pdf.set_font('Merriweather', '', 37)               # Text of the body in Times New Roman, regular, 13 pt
+            pdf.add_font('Merriweather', '', os.path.join(app.static_folder, 'fonts/Merriweather-Regular.ttf'), uni=True)
+            pdf.add_font('Merriweather-Bold', '', os.path.join(app.static_folder, 'fonts/Merriweather-Bold.ttf'), uni=True)
+            pdf.set_font('Merriweather', '', 37)               # Text of the body in Times New Roman, regular, 13 pt
 
-        locale.setlocale(locale.LC_TIME, "pt_BR")   # Setting the language to portuguese for the date
-        pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='CERTIFICADO')
+            locale.setlocale(locale.LC_TIME, "pt_BR")   # Setting the language to portuguese for the date
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='CERTIFICADO')
 
-        pdf.set_font('Merriweather', '', 14.5)
-        pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='Concedemos este certificado a')
-        pdf.cell(w=0, h=10, ln=1)                  # New line
+            pdf.set_font('Merriweather', '', 14.5)
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='Concedemos este certificado a')
+            pdf.cell(w=0, h=10, ln=1)                  # New line
 
-        #######################################################################################################
-        # User name
-        #######################################################################################################
-        user = Users.query.filter_by(username=username).first()
-        name = user.full_name                                       # User full name
-        pdf.set_font('Merriweather', '', 35)
-        name_size = pdf.get_string_width(name)
+            #######################################################################################################
+            # User name
+            #######################################################################################################
+            user = Users.query.filter_by(username=username).first()
+            name = user.full_name                                       # User full name
+            pdf.set_font('Merriweather', '', 35)
+            name_size = pdf.get_string_width(name)
 
-        if name_size > 287:
-            # Try to eliminate the prepositions
-            name_split = [name_part for name_part in name.split(' ') if not name_part.islower()]
-            # There's a first and last names and at least one middle name
-            if len(name_split) > 2:
-                first_name = name_split[0]
-                last_name = name_split[-1]
-                middle_names = [md_name[0]+'.' for md_name in name_split[1:-1]]
-                name = first_name + ' ' + ' '.join(middle_names) + ' ' + last_name
-                name_size = pdf.get_string_width(name)
-
-            # Even abbreviating, there is still the possibility that the name is too big, so
-            # we need to adjust it to the proper size
             if name_size > 287:
-                pdf.set_font('Merriweather', '', math.floor(287 * 35 / name_size))
+                # Try to eliminate the prepositions
+                name_split = [name_part for name_part in name.split(' ') if not name_part.islower()]
+                # There's a first and last names and at least one middle name
+                if len(name_split) > 2:
+                    first_name = name_split[0]
+                    last_name = name_split[-1]
+                    middle_names = [md_name[0]+'.' for md_name in name_split[1:-1]]
+                    name = first_name + ' ' + ' '.join(middle_names) + ' ' + last_name
+                    name_size = pdf.get_string_width(name)
 
-        pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt=name)
-        pdf.cell(w=0, h=10, ln=1)  # New line
+                # Even abbreviating, there is still the possibility that the name is too big, so
+                # we need to adjust it to the proper size
+                if name_size > 287:
+                    pdf.set_font('Merriweather', '', math.floor(287 * 35 / name_size))
 
-        #######################################################################################################
-        # por ter completado as leituras e as 6 tarefas do curso online
-        #######################################################################################################
-        pdf.set_font('Merriweather', '', 14.5)
-        pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='por ter completado as leituras e as 6 '
-                                                           'tarefas do curso online')
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt=name)
+            pdf.cell(w=0, h=10, ln=1)  # New line
 
-        #######################################################################################################
-        # Introdução ao Jornalismo Científico
-        #######################################################################################################
-        pdf.set_font('Merriweather-Bold', '', 21)
-        pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='Introdução ao Jornalismo Científico')
-        pdf.cell(w=0, h=8, ln=1)  # New line
+            #######################################################################################################
+            # por ter completado as leituras e as 6 tarefas do curso online
+            #######################################################################################################
+            pdf.set_font('Merriweather', '', 14.5)
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='por ter completado as leituras e as 6 '
+                                                               'tarefas do curso online')
 
-        #######################################################################################################
-        # Logo NeuroMat
-        #######################################################################################################
-        pdf.set_font('Merriweather', '', 12.5)
-        pdf.set_x(50)
-        y_production = pdf.get_y()
-        pdf.cell(w=20, h=10, border=0, ln=0, align='L', txt='Produção:')
-        y_logos = pdf.get_y()
-        pdf.image(os.path.join(app.static_folder, 'neuromat.png'), x=78, y=y_production+0.6, h=8.5)
+            #######################################################################################################
+            # Introdução ao Jornalismo Científico
+            #######################################################################################################
+            pdf.set_font('Merriweather-Bold', '', 21)
+            pdf.cell(w=0, h=10, border=0, ln=1, align='C', txt='Introdução ao Jornalismo Científico')
+            pdf.cell(w=0, h=8, ln=1)  # New line
 
-        #######################################################################################################
-        # Logo FAPESP and WMB
-        #######################################################################################################
-        pdf.set_xy(155, y_production)
-        pdf.cell(w=20, h=10, border=0, ln=1, align='L', txt='Apoio:')
-        pdf.image(os.path.join(app.static_folder, 'fapesp.png'), x=175, y=y_production+1.1, h=7)
-        pdf.image(os.path.join(app.static_folder, 'wmb.png'), x=215, y=y_production-1.1, h=13)
+            #######################################################################################################
+            # Logo NeuroMat
+            #######################################################################################################
+            pdf.set_font('Merriweather', '', 12.5)
+            pdf.set_x(50)
+            y_production = pdf.get_y()
+            pdf.cell(w=20, h=10, border=0, ln=0, align='L', txt='Produção:')
+            y_logos = pdf.get_y()
+            pdf.image(os.path.join(app.static_folder, 'neuromat.png'), x=78, y=y_production+0.6, h=8.5)
 
-        pdf.cell(w=0, h=5, ln=1)  # New line
+            #######################################################################################################
+            # Logo FAPESP and WMB
+            #######################################################################################################
+            pdf.set_xy(155, y_production)
+            pdf.cell(w=20, h=10, border=0, ln=1, align='L', txt='Apoio:')
+            pdf.image(os.path.join(app.static_folder, 'fapesp.png'), x=175, y=y_production+1.1, h=7)
+            pdf.image(os.path.join(app.static_folder, 'wmb.png'), x=215, y=y_production-1.1, h=13)
 
-        #######################################################################################################
-        # Footer
-        #######################################################################################################
-        y_signature = pdf.get_y()                   # Register the "y" position, so the signatures are aligned
+            pdf.cell(w=0, h=5, ln=1)  # New line
 
-        # Fernando da Paixão signature
-        pdf.image(os.path.join(app.static_folder, 'fpaixao.png'), x=75, y=y_signature, w=35, h=16)
-        pdf.set_xy(50, y_signature+6)
-        pdf.multi_cell(w=90,
-                       h=6.5,
-                       txt="______________________\n"
-                           "FERNANDO JORGE DA\nPAIXÃO FILHO\n\nCoordenador da equipe de\ndifusão do CEPID NeuroMat",
-                       border=0,
-                       align='C')
+            #######################################################################################################
+            # Footer
+            #######################################################################################################
+            y_signature = pdf.get_y()                   # Register the "y" position, so the signatures are aligned
 
-        # João Alexandre Peschanski signature
-        pdf.image(os.path.join(app.static_folder, 'jap.png'), x=180, y=y_signature+2, w=35, h=16)
-        pdf.set_xy(155, y_signature+6)
-        pdf.multi_cell(w=90,
-                       h=6.5,
-                       txt="______________________\n"
-                           "JOÃO ALEXANDRE\nPESCHANSKI\n\nPesquisador associado\ndo CEPID NeuroMat",
-                       border=0,
-                       align='C')
-        pdf.cell(w=0, h=10, ln=1)  # New line
-        pdf.set_font('Merriweather', '', 10.5)
+            # Fernando da Paixão signature
+            pdf.image(os.path.join(app.static_folder, 'fpaixao.png'), x=75, y=y_signature, w=35, h=16)
+            pdf.set_xy(50, y_signature+6)
+            pdf.multi_cell(w=90,
+                           h=6.5,
+                           txt="______________________\n"
+                               "FERNANDO JORGE DA\nPAIXÃO FILHO\n\nCoordenador da equipe de\ndifusão do CEPID NeuroMat",
+                           border=0,
+                           align='C')
 
-        # Text
-        pdf.set_x(25)
-        pdf.multi_cell(w=247, h=10, border=0, align='C', txt='O curso de Introdução ao Jornalismo Científico não tem um '
-                                                           'controle de registros, as leituras e tarefas são de acesso '
-                                                           'livre. Este certificado, portanto, não é reconhecido como '
-                                                           'um diploma oficial.')
+            # João Alexandre Peschanski signature
+            pdf.image(os.path.join(app.static_folder, 'jap.png'), x=180, y=y_signature+2, w=35, h=16)
+            pdf.set_xy(155, y_signature+6)
+            pdf.multi_cell(w=90,
+                           h=6.5,
+                           txt="______________________\n"
+                               "JOÃO ALEXANDRE\nPESCHANSKI\n\nPesquisador associado\ndo CEPID NeuroMat",
+                           border=0,
+                           align='C')
+            pdf.cell(w=0, h=10, ln=1)  # New line
+            pdf.set_font('Merriweather', '', 10.5)
 
-        # Generate the file
-        file = pdf.output(dest='S').encode('latin-1')
+            # Text
+            pdf.set_x(25)
+            pdf.multi_cell(w=247, h=10, border=0, align='C', txt='O curso de Introdução ao Jornalismo Científico não tem um '
+                                                               'controle de registros, as leituras e tarefas são de acesso '
+                                                               'livre. Este certificado, portanto, não é reconhecido como '
+                                                               'um diploma oficial.')
 
-        response = make_response(file)
-        response.headers.set('Content-Disposition', 'attachment',
-                             filename='IJC_Certificado_' + name.replace(" ", "_") + '.pdf')
-        response.headers.set('Content-Type', 'application/pdf')
-        return response
+            # Generate the file
+            file = pdf.output(dest='S').encode('latin-1')
+
+            response = make_response(file)
+            response.headers.set('Content-Disposition', 'attachment',
+                                 filename='IJC_Certificado_' + name.replace(" ", "_") + '.pdf')
+            response.headers.set('Content-Type', 'application/pdf')
+            return response
+        else:
+            return redirect(url_for('certificate'))
     else:
         return redirect(url_for('home'))
 
@@ -548,19 +561,63 @@ def certificate():
                                    coordinator=True)
         else:
             users = Users.query.filter_by(username=username)
-            return render_template('certificate.html', username=username, users=users)
+
+            if users.first():
+                can_download_certificate = all(x == "T" for x in users.first().can_download_certificate.split(";"))
+            else:
+                return redirect(url_for('subscription'))
+            return render_template('certificate.html',
+                                   username=username,
+                                   users=users,
+                                   can_download_certificate=can_download_certificate)
     else:
         return redirect('home.html')
 
 
-@app.route('/approve_certification/<user>', methods=['GET'])
-def approve_certification(user):
+@app.route('/solicit_certificate', methods=['GET'])
+def solicit_certificate():
+    username = get_username()
+
+    user_soliciting = Users.query.filter_by(username=username).first()
+    if username and user_soliciting:
+        user_soliciting.solicited_certificate = True
+
+        try:
+            db.session.commit()
+            return redirect(url_for('certificate'))
+        except:
+            return 'Ocorreu um erro!'
+    else:
+        return redirect(url_for('subscription'))
+
+
+@app.route('/deny_solicitation/<user_username>', methods=['GET'])
+def deny_solicitation_for_certificate(user_username):
     username = get_username()
 
     if username in app.config['COORDINATORS_USERNAMES']:
+        user_denied = Users.query.filter_by(username=user_username).first()
+        if user_username and user_denied:
+            user_denied.solicited_certificate = False
+            try:
+                db.session.commit()
+                return redirect(url_for('certificate'))
+            except:
+                return 'Ocorreu um erro!'
+    else:
+        return redirect(url_for('certificate'))
+
+
+@app.route('/approve_certification/<user>/<module_activity>', methods=['GET'])
+def approve_certification(user, module_activity):
+    username = get_username()
+
+    if username in app.config['COORDINATORS_USERNAMES'] and int(module_activity) >= 1:
         user_to_be_approved = Users.query.filter_by(username=user).first()
 
-        user_to_be_approved.can_download_certificate = True
+        user_modules_activities = user_to_be_approved.can_download_certificate.split(";")
+        user_modules_activities[int(module_activity)-1] = "T"
+        user_to_be_approved.can_download_certificate = ";".join(user_modules_activities)
         try:
             db.session.commit()
             return redirect(url_for('certificate'))
@@ -570,14 +627,16 @@ def approve_certification(user):
         return redirect(url_for('certificate'))
 
 
-@app.route('/deny_certification/<user>', methods=['GET'])
-def deny_certification(user):
+@app.route('/deny_certification/<user>/<module_activity>', methods=['GET'])
+def deny_certification(user, module_activity):
     username = get_username()
 
     if username in app.config['COORDINATORS_USERNAMES']:
         user_to_be_approved = Users.query.filter_by(username=user).first()
 
-        user_to_be_approved.can_download_certificate = False
+        user_modules_activities = user_to_be_approved.can_download_certificate.split(";")
+        user_modules_activities[int(module_activity)-1] = "F"
+        user_to_be_approved.can_download_certificate = ";".join(user_modules_activities)
         try:
             db.session.commit()
             return redirect(url_for('certificate'))
