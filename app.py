@@ -5,18 +5,15 @@ import os
 import yaml
 import requests
 import hashlib
-import shutil
-import PyPDF2
 import cryptography
-from flask import Flask, render_template, send_file, request, redirect, url_for, session, make_response, Response
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, Response, g
 from fpdf import FPDF
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from requests_oauthlib import OAuth1Session
 from oauth_wiki import get_username
 from sqlalchemy_utils import StringEncryptedType
-from PyPDF2 import PdfFileMerger, PdfFileWriter
-from merge_pdf import merge
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 __dir__ = os.path.dirname(__file__)
 app = Flask(__name__)
@@ -87,6 +84,16 @@ class CertificationPDF(FPDF):
 ########################################################################################################################
 # L O G I N
 ########################################################################################################################
+@app.before_request
+def init_profile():
+    g.profiling = []
+
+
+@app.before_request
+def global_user():
+    g.user = get_username()
+
+
 @app.route('/login')
 def login():
     """
