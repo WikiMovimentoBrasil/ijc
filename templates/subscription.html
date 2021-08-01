@@ -31,11 +31,10 @@
                         </p>
                         <p style="font-size: 85%">
                             As informações fornecidas por você são armazenadas na base de dados desta ferramenta.
-                            Somente a coordenação do curso tem acesso.
-                        </p>
-                        <p style="font-size: 85%">
-                            O seu nome completo e sem abreviações é obrigatório para a emissão da carta de inscrição
-                            e do certificado de conclusão. Verifique com atenção antes de salvá-lo.
+                            Somente a coordenação do curso tem acesso. O seu nome completo e sem abreviações é
+                            obrigatório para a emissão da carta de inscrição e do certificado de conclusão. Verifique
+                            com atenção antes de salvá-lo. Se for necessário corrigi-lo, envie uma mensagem na página
+                            de discussão do coordenador.
                         </p>
                     </div>
                     <form action="{{ url_for('subscription') }}" method="post" id="name_form">
@@ -73,6 +72,17 @@
                                     Baixar carta de inscrição
                                 </button>
                             </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="w3-quarter">
+                    {% if not user_is_in_dashboard %}
+                        <div class="w3-container" style="background-color:#FFC8C8; padding:15px; margin-right:15px;
+                        margin-left:15px; border-radius: 5px; margin-bottom: 15px">
+                            <p style="color:red">
+                                Você não está cadastrado(a) no Outreach Dashboard, a ferramenta de controle das atividades do curso. <br><br>
+                                <a target="_blank" href="https://outreachdashboard.wmflabs.org/courses/CEPID_NeuroMat/Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico?enroll="><b>Inscreva-se clicando aqui</b></a>
+                            </p>
                         </div>
                     {% endif %}
                 </div>

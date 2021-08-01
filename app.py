@@ -216,7 +216,7 @@ def subscription():
         if request.method == 'POST':
             user_name = request.form['Username']
             full_name = request.form['FullName']
-            modules_activities = ["F" for i in range(app.config["NUMBER_OF_MODULES"])]
+            modules_activities = ["NP" for i in range(app.config["NUMBER_OF_MODULES"])]
 
             new_subscription = Users(username=user_name,
                                      full_name=full_name,
@@ -417,7 +417,7 @@ def validate_document():
 @app.route('/index', methods=['GET'])
 def course_index():
     base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/"
-    page = "Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico%2F%C3%8Dndice"
+    page = "Programa_de_Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico"
 
     response = make_response(requests.get(base_url+page).content)
     response.headers.set('Content-Disposition', 'attachment',
@@ -661,6 +661,10 @@ def solicit_certificate():
     user_soliciting = Users.query.filter_by(username=username).first()
     if username and user_soliciting:
         user_soliciting.solicited_certificate = True
+
+        status_activities = ";".join(
+            ["NP" if x == "F" else x for x in user_soliciting.can_download_certificate.split(";")])
+        user_soliciting.can_download_certificate = status_activities
 
         try:
             db.session.commit()
