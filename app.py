@@ -26,7 +26,7 @@ app.config.update(yaml.safe_load(open(os.path.join(__dir__, 'config.yaml'))))
 # Initialize the database
 db = SQLAlchemy(app)
 
-key = "my_encryption_key_here"
+key = app.config["ENCRYPTION_KEY"]
 
 
 # Create database (db) model
