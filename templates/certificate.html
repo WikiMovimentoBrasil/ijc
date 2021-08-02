@@ -71,7 +71,7 @@
                                         {% endfor %}
                                     {% else %}
                                         {% for module_activity in user.can_download_certificate.split(";") %}
-                                            <td style="text-align: center; background-color: {% if module_activity == "F" %}#ff9090{% else %}#90ff90{% endif %}">
+                                            <td style="text-align: center; background-color: {% if module_activity == "F" %}#ffc0c0{% elif module_activity == "NP" %}#b0b0b0{% else %}#90ff90{% endif %}">
                                                 <a target="_blank" title="{% if module_activity == "F" %}Esta atividade ainda precisa ser aprovada{% else %}Esta atividade foi aprovada{% endif %}"
                                                        href="{{ aulas[loop.index - 1] }}{{ user.username }}">
                                                     <button type="button" style="padding:10px; background-color: #0069a1; width: 100%">Módulo {{ loop.index }}</button>
@@ -87,12 +87,12 @@
                                                         Certificado
                                                     </button>
                                                 </a>
-                                                <br>
-                                                <a href="{{ url_for('generate_attachment') }}">
-                                                    <button type="button" style="padding:10px; background-color:#009000; width: 100%">
-                                                        Anexos
-                                                    </button>
-                                                </a>
+{#                                                <br>#}
+{#                                                <a href="{{ url_for('generate_attachment') }}">#}
+{#                                                    <button type="button" style="padding:10px; background-color:#009000; width: 100%">#}
+{#                                                        Anexos#}
+{#                                                    </button>#}
+{#                                                </a>#}
                                             {% else %}
                                                 <a href="{{ url_for('solicit_certificate') }}">
                                                     <button type="button" style="padding:10px; background-color: {% if user.can_download_certificate %}#009000{% else %}#90c090{% endif %}; width: 100%">
