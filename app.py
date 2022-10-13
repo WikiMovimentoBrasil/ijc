@@ -553,9 +553,10 @@ def generate_certificate():
             # Text
             pdf.set_x(25)
             pdf.multi_cell(w=247, h=10, border=0, align='C', txt='O curso de Introdução ao Jornalismo Científico não tem um '
-                                                               'controle de registros, as leituras e tarefas são de acesso '
-                                                               'livre. Este certificado, portanto, não é reconhecido como '
-                                                               'um diploma oficial.')
+                                                                 'controle de registros, as leituras e tarefas são de acesso '
+                                                                 'livre. Este certificado, portanto, não é reconhecido como '
+                                                                 'um diploma oficial. O curso totaliza para sua realização '
+                                                                 'noventa horas.')
 
             # Generate the file
             file = pdf.output(dest='S').encode('latin-1')
