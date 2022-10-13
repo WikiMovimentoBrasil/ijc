@@ -417,10 +417,9 @@ def validate_document():
 # Baixar índice
 @app.route('/index', methods=['GET'])
 def course_index():
-    base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/"
-    page = "Programa_de_Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico"
+    base_url = "https://pt.wikiversity.org/api/rest_v1/page/pdf/Programa_de_Introdução_ao_Jornalismo_Científico"
 
-    response = make_response(requests.get(base_url+page).content)
+    response = make_response(requests.get(base_url).content)
     response.headers.set('Content-Disposition', 'attachment',
                          filename='IJC_Programa.pdf')
     response.headers.set('Content-Type', 'application/pdf')
