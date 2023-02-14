@@ -790,14 +790,14 @@ def get_content(data):
 def ask_coordinator_for_certificate_email(username, fullname):
     email_sender = app.config["GMAIL_EMAIL"]
     email_password = app.config["GMAIL_PASSWORD"]
-    email_receiver = ", ".join(app.config["GMAIL_COORDINATOR_EMAIL"])
+    email_receiver = app.config["GMAIL_COORDINATOR_EMAIL"]
 
     subject = "{fullname} ({username}) está solicitando um certificado do curso de Introdução ao Jornalismo Científico"
     body = """Olá, {coordinator},<br><br>O(A) estudante {fullname}, cujo nome de usuário é {username} está solicitando que suas atividades do curso <b>Introdução ao Jornalismo Científico</b> sejam avaliadas e lhe seja garantido o certificado de conclusão do curso.<br><br>Você pode verificar este(a) e outros(as) estudantes com avaliações pendentes em {url}.<br><br><b>Introdução ao Jornalismo Científico</b><br>Solicitações de certificados | <a href="{url_home}">ijc.toolforge.org</a>"""
 
     em = EmailMessage()
     em["From"] = formataddr((str(Header(app.config["GMAIL_EMAIL_HEADER"], 'utf-8')), email_sender))
-    em["To"] = email_receiver
+    em["To"] = ", ".join(email_receiver)
     em["Subject"] = subject.format(fullname=fullname, username=username)
     formatted_body = body.format(fullname=fullname,
                                  username=username,
