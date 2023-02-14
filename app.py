@@ -16,6 +16,13 @@ from oauth_wiki import get_username
 from sqlalchemy_utils import StringEncryptedType
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
+from email.message import EmailMessage
+import ssl
+import smtplib
+from email.header import Header
+from email.utils import formataddr
+from email.mime.text import MIMEText
+
 __dir__ = os.path.dirname(__file__)
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -660,7 +667,7 @@ def solicit_certificate():
     username = get_username()
 
     user_soliciting = Users.query.filter_by(username=username).first()
-    if username and user_soliciting:
+    if username and user_soliciting and user_soliciting.can_download_certificate != "T;T;T;T;T;T" and not user_soliciting.solicited_certificate:
         user_soliciting.solicited_certificate = True
 
         status_activities = ";".join(
@@ -669,11 +676,12 @@ def solicit_certificate():
 
         try:
             db.session.commit()
+            ask_coordinator_for_certificate_email(user_soliciting.username, user_soliciting.full_name)
             return redirect(url_for('certificate'))
         except:
             return 'Ocorreu um erro!'
     else:
-        return redirect(url_for('subscription'))
+        return redirect(url_for('certificate'))
 
 
 # Rejeitar pedido de certificação (atividades pendentes)
@@ -778,5 +786,32 @@ def get_content(data):
     return return_list
 
 
+# Enviar email
+def ask_coordinator_for_certificate_email(username, fullname):
+    email_sender = app.config["GMAIL_EMAIL"]
+    email_password = app.config["GMAIL_PASSWORD"]
+    email_receiver = ", ".join(app.config["GMAIL_COORDINATOR_EMAIL"])
+
+    subject = "{fullname} ({username}) está solicitando um certificado do curso de Introdução ao Jornalismo Científico"
+    body = """Olá, {coordinator},<br><br>O(A) estudante {fullname}, cujo nome de usuário é {username} está solicitando que suas atividades do curso <b>Introdução ao Jornalismo Científico</b> sejam avaliadas e lhe seja garantido o certificado de conclusão do curso.<br><br>Você pode verificar este(a) e outros(as) estudantes com avaliações pendentes em {url}.<br><br><b>Introdução ao Jornalismo Científico</b><br>Solicitações de certificados | <a href="{url_home}">ijc.toolforge.org</a>"""
+
+    em = EmailMessage()
+    em["From"] = formataddr((str(Header(app.config["GMAIL_EMAIL_HEADER"], 'utf-8')), email_sender))
+    em["To"] = email_receiver
+    em["Subject"] = subject.format(fullname=fullname, username=username)
+    formatted_body = body.format(fullname=fullname,
+                                 username=username,
+                                 url=url_for("certificate_only_requested", _external=True),
+                                 url_home=url_for("home", _external=True),
+                                 coordinator=" e ".join([", ".join(app.config["COORDINATORS_USERNAMES"][:-1]), app.config["COORDINATORS_USERNAMES"][-1]]))
+    em.set_content(MIMEText(formatted_body, "html"))
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+
+
 if __name__ == '__main__':
     app.run()
+

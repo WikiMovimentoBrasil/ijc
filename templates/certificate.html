@@ -22,6 +22,16 @@
         <div class="w3-container" style="text-align: center; padding:0">
             <div class="w3-row" style="margin-bottom: 15px">
                 <div class="w3-container">
+                    {% if coordinator %}
+                        <div class="w3-row">
+                            <div class="w3-quarter">&nbsp;</div>
+                            <div class="w3-half">
+                                <a href="{{ url_for('certificate_only_requested') }}">
+                                    <button type="button" style="padding:10px; background-color: #05224e; margin:0 0 1em 0; width: 100%">Ver somente atividades de quem requisitou certificado</button>
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
                     <table>
                         <thead>
                         <tr>
@@ -87,18 +97,16 @@
                                                         Certificado
                                                     </button>
                                                 </a>
-{#                                                <br>#}
-{#                                                <a href="{{ url_for('generate_attachment') }}">#}
-{#                                                    <button type="button" style="padding:10px; background-color:#009000; width: 100%">#}
-{#                                                        Anexos#}
-{#                                                    </button>#}
-{#                                                </a>#}
-                                            {% else %}
+                                            {% elif not user.solicited_certificate %}
                                                 <a href="{{ url_for('solicit_certificate') }}">
-                                                    <button type="button" style="padding:10px; background-color: {% if user.can_download_certificate %}#009000{% else %}#90c090{% endif %}; width: 100%">
+                                                    <button type="button" style="padding:10px; background-color: #009000; width: 100%">
                                                         Solicitar certificado
                                                     </button>
                                                 </a>
+                                            {% else %}
+                                                <button type="button" style="padding:10px; background-color: #f5c925; color:black; width: 100%">
+                                                    Certificado solicitado
+                                                </button>
                                             {% endif %}
                                         </td>
                                     {% else %}
