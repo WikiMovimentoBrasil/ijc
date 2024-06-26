@@ -341,7 +341,7 @@ def subscription_letter():
                            "Esta carta certifica que "
                            + name +
                            " está apto(a) a participar do curso de Introdução ao "
-                           "Jornalismo Científico.\n\n"
+                           "Jornalismo Científico e comprova sua matrícula, pela plataforma de registro IJC (https://ijc.toolforge.org).\n\n"
                            "Caso requisitado, podemos emitir uma declaração de conclusão do curso, uma vez que o(a) "
                            "participante tenha finalizado todas as leituras e tarefas.\n\n"
                            "Por favor, não hesitem em entrar em contato conosco para receber outras informações a respeito "
