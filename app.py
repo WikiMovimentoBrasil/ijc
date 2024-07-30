@@ -304,18 +304,18 @@ def subscription_letter():
         pdf.set_font('Times', '', 13)               # Text of the body in Times New Roman, regular, 13 pt
 
         locale.setlocale(locale.LC_TIME, "pt_BR")   # Setting the language to portuguese for the date
-        pdf.cell(w=150, h=6.5, border=0, ln=1, align='L',
+        pdf.cell(w=150, h=6, border=0, ln=1, align='L',
                  txt='São Paulo, ' + datetime.now().strftime("%d de %B de %Y"))
 
-        pdf.cell(w=0, h=6.5, ln=1)                  # New line
+        pdf.cell(w=0, h=6, ln=1)                  # New line
 
         #######################################################################################################
         # A quem possa interessar
         #######################################################################################################
         pdf.set_font('Times', 'B', 13)              # Text of the addressing in Times New Roman, bold, 13 pt
-        pdf.cell(w=150, h=6.5, txt='A quem possa interessar', border=0, ln=1, align='L')
+        pdf.cell(w=150, h=6, txt='A quem possa interessar', border=0, ln=1, align='L')
 
-        pdf.cell(w=0, h=6.5, ln=1)                  # New line
+        pdf.cell(w=0, h=6, ln=1)                  # New line
 
         #######################################################################################################
         # User data
@@ -329,7 +329,7 @@ def subscription_letter():
         #######################################################################################################
         pdf.set_font('Times', '', 13)               # Text of the body in Times New Roman, regular, 13 pt
         pdf.multi_cell(w=0,
-                       h=6.5,
+                       h=6,
                        txt="O curso de Introdução ao Jornalismo Científico, desenvolvido pelo Centro de Pesquisa, Inovação "
                            "e Difusão em Neuromatemática com o apoio da FAPESP e do Wiki Movimento Brasil, está disponível "
                            "em uma plataforma de educação aberta, a Wikiversidade.\n\n"
@@ -342,7 +342,31 @@ def subscription_letter():
                            + name +
                            " está apto(a) a participar do curso de Introdução ao "
                            "Jornalismo Científico e comprova sua matrícula, pela plataforma de registro IJC (https://ijc.toolforge.org).\n\n"
-                           "Caso requisitado, podemos emitir uma declaração de conclusão do curso, uma vez que o(a) "
+                           "Atestamos para os devidos fins, portanto, que "
+                           + name +
+                           " realiza o curso de Introdução ao Jornalismo Científico. A realização do curso pode ser verificada "
+                           "na página de acompanhamento das atividades, que monitora o progresso do(a) estudante:\n",
+                       border=0,
+                       align='J')
+        outreach_link = "https://outreachdashboard.wmflabs.org/courses/CEPID_NeuroMat/Introdução_ao_Jornalismo_Científico/students/articles/" + username
+        safe_outreach_link = "https://outreachdashboard.wmflabs.org/courses/CEPID_NeuroMat/Introdu%C3%A7%C3%A3o_ao_Jornalismo_Cient%C3%ADfico/students/articles/" + username
+        pdf.multi_cell(w=0,
+                       h=6,
+                       txt=outreach_link + "\n\n",
+                       border=0,
+                       align='J')
+        x = pdf.get_x()
+        y = pdf.get_y()
+        w = pdf.get_string_width(outreach_link)
+        h = 6
+        pdf.link(x=x,
+                 y=y-3*h,
+                 w=w,
+                 h=2*h,
+                 link=safe_outreach_link)
+        pdf.multi_cell(w=0,
+                       h=6,
+                       txt="Caso requisitado, podemos emitir uma declaração de conclusão do curso, uma vez que o(a) "
                            "participante tenha finalizado todas as leituras e tarefas.\n\n"
                            "Por favor, não hesitem em entrar em contato conosco para receber outras informações a respeito "
                            "do curso.\n\n"
@@ -355,22 +379,22 @@ def subscription_letter():
         #######################################################################################################
         pdf.cell(w=0, h=13, ln=1)                   # Give some space for the signatures
         # Fernando da Paixão signature
-        pdf.image(os.path.join(app.static_folder, 'fpaixao.png'), x=37.5, y=224, w=35, h=16)
-        pdf.set_y(230)
+        pdf.image(os.path.join(app.static_folder, 'fpaixao.png'), x=37.5, y=234, w=35, h=16)
+        pdf.set_y(240)
         pdf.multi_cell(w=90,
-                       h=6.5,
+                       h=6,
                        txt="_____________________________________\n"
-                           "FERNANDO JORGE DA\nPAIXÃO FILHO\n\nCoordenador da equipe de\ndifusão do CEPID NeuroMat",
+                           "FERNANDO JORGE DA\nPAIXÃO FILHO\nCoordenador da equipe de\ndifusão do CEPID NeuroMat",
                        border=0,
                        align='C')
 
         # João Alexandre Peschanski signature
-        pdf.image(os.path.join(app.static_folder, 'jap.png'), x=137.5, y=226, w=35, h=16)
-        pdf.set_xy(110, 230)
+        pdf.image(os.path.join(app.static_folder, 'jap.png'), x=137.5, y=236, w=35, h=16)
+        pdf.set_xy(110, 240)
         pdf.multi_cell(w=90,
-                       h=6.5,
+                       h=6,
                        txt="_____________________________________\n"
-                           "JOÃO ALEXANDRE\nPESCHANSKI\n\nPesquisador associado\ndo CEPID NeuroMat",
+                           "JOÃO ALEXANDRE\nPESCHANSKI\nPesquisador associado\ndo CEPID NeuroMat",
                        border=0,
                        align='C')
         pdf.cell(w=0, h=5, ln=1)
@@ -379,7 +403,7 @@ def subscription_letter():
         file = pdf.output(dest='S').encode('latin-1')
 
         response = make_response(file)
-        response.headers.set('Content-Disposition', 'attachment',
+        response.headers.set('Content-Disposition', 'inline',
                              filename='IJC_Inscrição_' + name.replace(" ", "_") + '.pdf')
         response.headers.set('Content-Type', 'application/pdf')
         return response
