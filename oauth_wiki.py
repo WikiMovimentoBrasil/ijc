@@ -3,6 +3,8 @@ from requests_oauthlib import OAuth1Session
 from urllib.parse import urlencode
 
 
+USER_AGENT = "IJC (https://w.wiki/3H3G)"
+
 project = 'https://pt.wikiversity.org/w/api.php?'
 
 
@@ -15,7 +17,7 @@ def raw_request(params):
                           client_secret=client_secret,
                           resource_owner_key=session['owner_key'],
                           resource_owner_secret=session['owner_secret'])
-    return oauth.get(url, timeout=4)
+    return oauth.get(url, timeout=4, headers={ 'User-Agent': USER_AGENT})
 
 
 def api_request(params):

@@ -39,4 +39,4 @@ Please make sure to update tests as appropriate.
 [GNU General Public License v3.0](https://github.com/WikiMovimentoBrasil/wikimarcas/blob/master/LICENSE)
 
 ## Credits
-This application was developed by the Wiki Movimento Brasil User Group in partnership with RIDC NeuroMat.
+This application was developed by Wikimedia Brasil in partnership with RIDC NeuroMat.

@@ -136,7 +136,7 @@ def login():
                           client_secret=client_secret,
                           callback_uri='oob')
 
-    fetch_response = oauth.fetch_request_token(request_token_url)
+    fetch_response = oauth.fetch_request_token(request_token_url, headers={ 'User-Agent': USER_AGENT})
 
     session['owner_key'] = fetch_response.get('oauth_token')
     session['owner_secret'] = fetch_response.get('oauth_token_secret')
@@ -178,7 +178,7 @@ def oauth_callback():
                           resource_owner_secret=session['owner_secret'],
                           verifier=verifier)
 
-    oauth_tokens = oauth.fetch_access_token(access_token_url)
+    oauth_tokens = oauth.fetch_access_token(access_token_url, headers={ 'User-Agent': USER_AGENT})
     session['owner_key'] = oauth_tokens.get('oauth_token')
     session['owner_secret'] = oauth_tokens.get('oauth_token_secret')
     next_page = session.get('after_login')
@@ -340,7 +340,7 @@ def subscription_letter():
         pdf.multi_cell(w=0,
                        h=6,
                        txt="O curso de Introdução ao Jornalismo Científico, desenvolvido pelo Centro de Pesquisa, Inovação "
-                           "e Difusão em Neuromatemática com o apoio da FAPESP e do Wiki Movimento Brasil, está disponível "
+                           "e Difusão em Neuromatemática com o apoio da FAPESP e da Wikimedia Brasil, está disponível "
                            "em uma plataforma de educação aberta, a Wikiversidade.\n\n"
                            "As aulas foram realizadas, com orientação científica da equipe de pesquisa do CEPID NeuroMat, "
                            "por bolsistas de jornalismo científico da FAPESP. O objetivo do curso é capacitar profissio"
@@ -535,19 +535,19 @@ def generate_certificate():
             # Logo NeuroMat e WMB
             #######################################################################################################
             pdf.set_font('Merriweather', '', 12.5)
-            pdf.set_x(50)
+            pdf.set_x(60)
             y_production = pdf.get_y()
             pdf.cell(w=20, h=10, border=0, ln=0, align='L', txt='Produção:')
             y_logos = pdf.get_y()
-            pdf.image(os.path.join(app.static_folder, 'neuromat.png'), x=78, y=y_production + 0.6, h=8.5)
-            pdf.image(os.path.join(app.static_folder, 'wmb.png'), x=115, y=y_production - 1.1, h=13)
+            pdf.image(os.path.join(app.static_folder, 'neuromat.png'), x=88, y=y_production + 0.6, h=8.5)
+            pdf.image(os.path.join(app.static_folder, 'wmb.png'), x=125, y=y_production - 0.5, h=10)
 
             #######################################################################################################
             # Logo FAPESP
             #######################################################################################################
-            pdf.set_xy(155, y_production)
+            pdf.set_xy(175, y_production)
             pdf.cell(w=20, h=10, border=0, ln=1, align='L', txt='Apoio:')
-            pdf.image(os.path.join(app.static_folder, 'fapesp.png'), x=175, y=y_production + 1.1, h=7)
+            pdf.image(os.path.join(app.static_folder, 'fapesp.png'), x=195, y=y_production + 1.1, h=7)
 
             pdf.cell(w=0, h=5, ln=1)  # New line
 
@@ -556,23 +556,13 @@ def generate_certificate():
             #######################################################################################################
             y_signature = pdf.get_y()                   # Register the "y" position, so the signatures are aligned
 
-            # Fernando da Paixão signature
-            pdf.image(os.path.join(app.static_folder, 'fpaixao.png'), x=75, y=y_signature, w=35, h=16)
-            pdf.set_xy(50, y_signature+6)
-            pdf.multi_cell(w=90,
-                           h=6.5,
-                           txt="______________________\n"
-                               "FERNANDO JORGE DA\nPAIXÃO FILHO\n\nCoordenador da equipe de\ndifusão do CEPID NeuroMat",
-                           border=0,
-                           align='C')
-
             # João Alexandre Peschanski signature
-            pdf.image(os.path.join(app.static_folder, 'jap.png'), x=180, y=y_signature+2, w=35, h=16)
-            pdf.set_xy(155, y_signature+6)
+            pdf.image(os.path.join(app.static_folder, 'jap.png'), x=125, y=y_signature+2, w=35, h=16)
+            pdf.set_xy(97, y_signature+6)
             pdf.multi_cell(w=90,
                            h=6.5,
                            txt="______________________\n"
-                               "JOÃO ALEXANDRE\nPESCHANSKI\n\nPesquisador associado\ndo CEPID NeuroMat",
+                               "JOÃO ALEXANDRE\nPESCHANSKI\n\nDiretor Executivo\nda Wikimedia Brasil",
                            border=0,
                            align='C')
             pdf.cell(w=0, h=10, ln=1)  # New line
